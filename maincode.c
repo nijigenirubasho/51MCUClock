@@ -1,7 +1,7 @@
 /**--------------------------------------------------------------------------------------------------------------------------------------------------------------------
 用51单片机(STC89C52,亚博智能BST-M51教材定制版开发板)制作电子时钟
 
-作者：nijigenirubasho @Github 2018-05-25
+作者：nijigenirubasho @Github 2018-05-26
 
 功能简述：1.小时/分钟显示和设置。2.每秒闪光一次，可以以此读秒。3.有每小时响铃一次的功能。
 
@@ -22,6 +22,8 @@
 //STC89C52用头文件
 // > Header file for generic 80C52 and 80C32 microcontroller.
 #include <reg52.h>
+//Intrinsic functions for C51.
+#include <intrins.h>
 //数码管段选锁存器
 #define lsd_seg P0
 //LED阵列
@@ -55,12 +57,12 @@ int hour,min,sec;
 unsigned char code lsd_list[]= {0x8f,0x4f,0x2f,0x1f};
 //字符集码表：0123456789
 unsigned char code charset[]= {0x3f,0x06,0x5b,0x4f,0x66,0x6d,0x7d,0x07,0x7f,0x6f};
-//软件延时：CPU时间占用延迟(ms)
-void delay(int i)
+//软件延时：CPU时间占用延迟(ms) 11.0592MHZ
+void delay(unsigned int ms)
 {
-    int j,k;
-    for(j=i; j>0; j--)
-        for(k=124; k>0; k--);
+    unsigned int x;
+    while(ms--)
+        for(x=125; x>0; x--);
 }
 //显示一位数字
 void lsd_display(int which,int body)
@@ -409,6 +411,8 @@ void serial_io() interrupt 4 using 2
             //无效命令指示
             SBUF='?';
     }
+    //测试：缓冲延迟
+    _nop_();
     while(!TI);//等待发送数据完成
     //复位发送中断标志
     TI=0;
