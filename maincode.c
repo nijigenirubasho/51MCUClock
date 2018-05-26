@@ -246,7 +246,8 @@ void main()
                 if(!set_mode)
                 {
                     //一定要考虑溢出的问题：adjust*100/adjust_offset不可用
-                    unsigned char percent=adjust/(adjust_offset/100);
+                    //除数取整较小，因此有可能溢出需要加一
+                    unsigned char percent=adjust/(adjust_offset/100+1);
                     //由于adjust_offset非整百，因此不必判断100%，因为永远不可能达到
                     //if(percent/10!=10)
                     //75：adjust的字母顺序和
@@ -382,7 +383,7 @@ void serial_io() interrupt 4 using 2
         break;
     //调试：adjust大致的值，255（char容积）分度
     case 7:
-        SBUF=adjust/(adjust_offset/255);
+        SBUF=adjust/(adjust_offset/255+1);
         break;
     //设置：根据接收设置相应的时间数值
     /*
