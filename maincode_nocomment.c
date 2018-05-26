@@ -1,4 +1,3 @@
-
 #include <reg52.h>
 #define lsd_seg P0
 #define ledx P1
