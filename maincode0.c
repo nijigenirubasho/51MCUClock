@@ -1,15 +1,15 @@
 /**
 为另外一块单片机实验板(YL-39)移植此时钟程序，仅注释修改部分。
-注：因为用不上，删去了用蜂鸣器整点报时的功能。
-作者：nijigenirubasho @Github 2018-09-10
+注：因为用不上，删去了用蜂鸣器整点报时的功能。加上了按下K5转换是否显示时间状态以节省耗能。
+作者：nijigenirubasho @Github 2018-09-11
 */
 #include <reg52.h>
 #include <intrins.h>
 #define lsd_seg P0
 #define ledx P1
 #define lsd_pos P2
-//因环境变化，可能要修改这个，但校准要花费的时间过长，所以暂不修改
-#define adjust_offset 2789
+//修改校准值
+#define adjust_offset 10805
 //修改按键变量名及针脚
 sbit key3=P3^5;
 sbit key4=P3^4;
@@ -22,6 +22,8 @@ sbit led7=P1^6;
 //sbit beep=P2^3;
 int fiftyms_count=0,pendulum,flash,set_mode,hour_alarm,adjust=0;
 int hour,min,sec;
+//显示状态
+bit is_display=1;
 //修改数码管位选数组
 unsigned char code lsd_list[]= {0xf8,0xf4,0xf2,0xf1};
 //修改为共阳数码管码表
@@ -99,50 +101,61 @@ void main()
     TR0=1;
     while(1)
     {
-        lsd_show_all(hour/10,hour%10,min/10,min%10);
+        //不在显示状态的话消隐数码管
+        if(is_display)
+            lsd_show_all(hour/10,hour%10,min/10,min%10);
+        else
+            lsd_seg=0xff;
         if(key3==0)
         {
-            delay(10);
-            if(key3==0)
+            //如果不在显示状态则不做任何操作
+            if(is_display)
             {
-                set_mode++;
-                if(set_mode==3)
+                delay(10);
+                if(key3==0)
                 {
-                    set_mode=0;
-                    sec=0;
-                    fiftyms_count=0;
-                    adjust=0;
+                    set_mode++;
+                    if(set_mode==3)
+                    {
+                        set_mode=0;
+                        sec=0;
+                        fiftyms_count=0;
+                        adjust=0;
+                    }
                 }
             }
             while(key3==0);
         }
         if(key4==0)
         {
-            delay(10);
-            if(key4==0)
+            if(is_display)
             {
-                switch(set_mode)
+                delay(10);
+                if(key4==0)
                 {
-                case 1:
-                    hour++;
-                    if(hour==24)
-                        hour=0;
-                    break;
-                case 2:
-                    min++;
-                    if(min==60)
-                        min=0;
+                    switch(set_mode)
+                    {
+                    case 1:
+                        hour++;
+                        if(hour==24)
+                            hour=0;
+                        break;
+                    case 2:
+                        min++;
+                        if(min==60)
+                            min=0;
+                    }
                 }
-            }
-            while(key4==0)
-            {
-                if(!set_mode)
+                while(key4==0)
                 {
-                    lsd_show_all(min/10,min%10,sec/10,sec%10);
-                    led7=0;
+                    if(!set_mode)
+                    {
+                        lsd_show_all(min/10,min%10,sec/10,sec%10);
+                        led7=0;
+                    }
                 }
+                led7=1;
             }
-            led7=1;
         }
         if(key5==0)
         {
@@ -151,6 +164,10 @@ void main()
             {
                 switch(set_mode)
                 {
+                case 0:
+                    //显示状态反转
+                    is_display=!is_display;
+                    break;
                 case 1:
                     hour--;
                     if(hour==-1)
