@@ -1,15 +1,15 @@
 /**
 为另外一块单片机实验板(YL-39)移植此时钟程序，仅注释修改部分。
 注：因为用不上，删去了用蜂鸣器整点报时的功能。加上了按下K5转换是否显示时间状态以节省耗能。
-作者：nijigenirubasho @Github 2018-09-11
+作者：nijigenirubasho @Github 2018-09-12
 */
 #include <reg52.h>
 #include <intrins.h>
 #define lsd_seg P0
 #define ledx P1
 #define lsd_pos P2
-//修改校准值
-#define adjust_offset 10805
+//修改校准值 2
+#define adjust_offset 11606
 //修改按键变量名及针脚
 sbit key3=P3^5;
 sbit key4=P3^4;
